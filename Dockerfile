@@ -1,14 +1,18 @@
 FROM n8nio/n8n:latest
 
-# Passer en utilisateur root pour les permissions
+# En tant que root, créer le dossier pour les modules externes
 USER root
+RUN mkdir -p /home/node/.n8n/custom && chown -R node:node /home/node/.n8n
 
-# Se déplacer dans le répertoire où n8n est installé
-WORKDIR /usr/local/lib/node_modules/n8n
-
-# Lancer l'installation du module ici
-RUN npm install node-imap
-
-# Revenir à l'utilisateur et au répertoire par défaut
+# Revenir à l'utilisateur standard de n8n
 USER node
+
+# Se déplacer dans le nouveau dossier
+WORKDIR /home/node/.n8n/custom
+
+# Créer un fichier package.json et installer le module
+# Ceci isole notre module des dépendances de n8n
+RUN echo '{"name": "n8n-custom-modules", "version": "1.0.0"}' > package.json && npm install node-imap
+
+# Revenir au répertoire de travail par défaut
 WORKDIR /home/node
